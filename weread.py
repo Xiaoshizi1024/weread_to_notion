@@ -12,20 +12,20 @@ from http.cookies import SimpleCookie
 from datetime import datetime
 import hashlib
 
-WEREAD_URL = "https://weread.qq.com/"
-WEREAD_NOTEBOOKS_URL = "https://i.weread.qq.com/user/notebooks"
-WEREAD_BOOKMARKLIST_URL = "https://i.weread.qq.com/book/bookmarklist"
-WEREAD_CHAPTER_INFO = "https://i.weread.qq.com/book/chapterInfos"
-WEREAD_READ_INFO_URL = "https://i.weread.qq.com/book/readinfo"
+WEREAD_URL = "https://weread.qq.com/"  #微信读书链接
+WEREAD_NOTEBOOKS_URL = "https://i.weread.qq.com/user/notebooks"  #我书架上的所有书籍信息
+WEREAD_BOOKMARKLIST_URL = "https://i.weread.qq.com/book/bookmarklist" #书中笔记的链接，我制作的书签
+WEREAD_CHAPTER_INFO = "https://i.weread.qq.com/book/chapterInfos"  # 书中的章节信息？
+WEREAD_READ_INFO_URL = "https://i.weread.qq.com/book/readinfo"  #
 WEREAD_REVIEW_LIST_URL = "https://i.weread.qq.com/review/list"
 WEREAD_BOOK_INFO = "https://i.weread.qq.com/book/info"
 
 
-def parse_cookie_string(cookie_string):
-    cookie = SimpleCookie()
-    cookie.load(cookie_string)
-    cookies_dict = {}
-    cookiejar = None
+def parse_cookie_string(cookie_string): #这是一个解析Cookie字符串的函数
+    cookie = SimpleCookie() #创建一个SimpleCookie对象
+    cookie.load(cookie_string) #使用load()方法解析传入的Cookie字符串，加载到SimpleCookie对象中
+    cookies_dict = {} #初始化一个空字典cookies_dict
+    cookiejar = None #这是用cookies_dict字典创建一个CookieJar对象？？？
     for key, morsel in cookie.items():
         cookies_dict[key] = morsel.value
         cookiejar = cookiejar_from_dict(
@@ -36,10 +36,10 @@ def parse_cookie_string(cookie_string):
 
 def get_bookmark_list(bookId):
     """获取我的划线"""
-    params = dict(bookId=bookId)
-    r = session.get(WEREAD_BOOKMARKLIST_URL, params=params)
-    if r.ok:
-        updated = r.json().get("updated")
+    params = dict(bookId=bookId)  #用来构造请求参数， 并赋值给 params 变量。这样 params 就是一个只有 bookId 一个键值对的请求参数字典了。接下来 requests 模块在发送请求时,可以直接使用这个 params,它会自动编码成请求中的查询字符串
+    r = session.get(WEREAD_BOOKMARKLIST_URL, params=params) #使用 session 发送了一个 GET 请求,传入预先构造好的参数 params,然后把响应对象赋值给 r
+    if r.ok:  # 如果r.ok,的状态是ok 状态码在200-400之间  如果相应成为那么就按照下面走，如何不是直接返回None
+        updated = r.json().get("updated")  #从JSON中取出updated字段
         updated = sorted(updated, key=lambda x: (
             x.get("chapterUid", 1), int(x.get("range").split("-")[0])))
         return r.json()["updated"]
@@ -129,24 +129,24 @@ def get_quote(content):
 def get_callout(content, style, colorStyle, reviewId):
     # 根据不同的划线样式设置不同的emoji 直线type=0 背景颜色是1 波浪线是2
     emoji = "🌟"
-    if style == 0:
+    if style == 0:  #如何划线样式是直线，那么用emoji灯泡来标识
         emoji = "💡"
-    elif style == 1:
+    elif style == 1: #如何划线样式是背景颜色，那么用emoji五角星来标识
         emoji = "⭐"
     # 如果reviewId不是空说明是笔记
     if reviewId != None:
         emoji = "✍️"
     color = "default"
-    # 根据划线颜色设置文字的颜色
+    # 根据划线颜色设置文字的颜色  微信读书中划线中1-5五个颜色分别是粉色、紫色、蓝色、绿色、橙色；在Notion中对应的是红色、紫色、蓝色、绿色、橙色
     if colorStyle == 1:
-        color = "red"
+        color = "red" #颜色为红色
     elif colorStyle == 2:
-        color = "purple"
+        color = "purple" #颜色为紫色
     elif colorStyle == 3:
-        color = "blue"
+        color = "blue" #颜色为蓝色
     elif colorStyle == 4:
-        color = "green"
-    elif colorStyle == 5:
+        color = "green"  #颜色为绿色
+    elif colorStyle == 5:  #颜色为黄色
         color = "yellow"
     return {
         "type": "callout",
